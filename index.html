@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON Football Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1976D2;
+            --secondary-color: #0D47A1;
+            --accent-color: #4CAF50;
+            --dark-color: #263238;
+            --light-color: #ECEFF1;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .game-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .game-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .game-header h1 {
+            font-size: 2.2em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .game-tabs {
+            background-color: var(--dark-color);
+            padding: 0;
+        }
+        
+        .game-tabs .nav-link {
+            color: white;
+            border-radius: 0;
+            padding: 15px 20px;
+            font-weight: 500;
+        }
+        
+        .game-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            padding: 20px;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--light-color);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .status-label {
+            font-size: 0.9em;
+            color: var(--dark-color);
+        }
+        
+        .player-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        .player-card .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .player-details {
+            display: flex;
+            align-items: center;
+        }
+        
+        .player-avatar {
+            background-color: var(--light-color);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-right: 15px;
+            color: var(--primary-color);
+        }
+        
+        .player-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--dark-color);
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #777;
+        }
+        
+        .match-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .match-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        .vs {
+            margin: 0 10px;
+            color: #999;
+        }
+        
+        .match-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .shop-item {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: white;
+            transition: transform 0.2s;
+        }
+        
+        .shop-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .shop-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .shop-item-title {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--dark-color);
+        }
+        
+        .shop-item-price {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .shop-item-desc {
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        .ton-logo {
+            width: 15px;
+            height: 15px;
+            margin-right: 2px;
+        }
+        
+        .wallet-info {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .wallet-address {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .wallet-balance {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 5px;
+        }
+        
+        .game-results {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .result-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-teams {
+            font-weight: bold;
+        }
+        
+        .result-score {
+            background: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            background-color: var(--light-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .match-score {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 0 10px;
+        }
+        
+        .booster-active {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 2px solid var(--accent-color);
+        }
+        
+        .boost-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .player-details {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .player-avatar {
+                margin: 0 auto 10px;
+            }
+            
+            .status-bar {
+                flex-wrap: wrap;
+            }
+            
+            .status-item {
+                flex: 0 0 50%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>TON Football Manager</h1>
+            <p class="mb-0">Build your dream team and win the championship!</p>
+        </div>
+        
+        <!-- Wallet Connection Section -->
+        <div class="wallet-section p-3 bg-light">
+            <div id="tonconnect-ui"></div>
+            <div id="walletInfo" style="display: none;" class="wallet-info mt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Wallet Address:</small>
+                        <div id="walletAddress" class="wallet-address">-</div>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">Balance:</small>
+                        <div id="walletBalance" class="wallet-balance">0 TON</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Tabs -->
+        <ul class="nav nav-tabs game-tabs" id="gameTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="team-tab" data-bs-toggle="tab" data-bs-target="#team" type="button" role="tab">My Team</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab">Matches</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="shop-tab" data-bs-toggle="tab" data-bs-target="#shop" type="button" role="tab">Boosters Shop</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="standings-tab" data-bs-toggle="tab" data-bs-target="#standings" type="button" role="tab">Standings</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="gameTabsContent">
+            <!-- Team Tab -->
+            <div class="tab-pane fade show active" id="team" role="tabpanel" aria-labelledby="team-tab">
+                <div class="status-bar">
+                    <div class="status-item">
+                        <div class="status-value" id="teamRating">75</div>
+                        <div class="status-label">Team Rating</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="teamFunds">1000</div>
+                        <div class="status-label">Funds (coins)</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="leaguePosition">10th</div>
+                        <div class="status-label">League Position</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="seasonProgress">3/38</div>
+                        <div class="status-label">Season Progress</div>
+                    </div>
+                </div>
+                
+                <h4>Squad</h4>
+                <div id="playersList" class="row">
+                    <!-- Players will be added here dynamically -->
+                </div>
+            </div>
+            
+            <!-- Matches Tab -->
+            <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
+                <div class="status-bar">
+                    <div class="status-item">
+                        <div class="status-value" id="matchesPlayed">3</div>
+                        <div class="status-label">Played</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="matchesWon">1</div>
+                        <div class="status-label">Won</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="matchesDrawn">1</div>
+                        <div class="status-label">Drawn</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="matchesLost">1</div>
+                        <div class="status-label">Lost</div>
+                    </div>
+                </div>
+                
+                <h4>Next Match</h4>
+                <div id="nextMatch" class="match-card">
+                    <!-- Next match will be added here -->
+                </div>
+                
+                <h4>Recent Results</h4>
+                <div id="matchResults" class="game-results">
+                    <!-- Match results will be added here -->
+                </div>
+            </div>
+            
+            <!-- Shop Tab -->
+            <div class="tab-pane fade" id="shop" role="tabpanel" aria-labelledby="shop-tab">
+                <div class="alert alert-info">
+                    <strong>Boost your team!</strong> Purchase boosters using TON to get an edge in matches.
+                </div>
+                
+                <div id="shopItems" class="row">
+                    <!-- Shop items will be added here -->
+                </div>
+                
+                <h4 class="mt-4">Active Boosters</h4>
+                <div id="activeBoosters" class="row">
+                    <div class="col-12">
+                        <div class="alert alert-light">
+                            No active boosters. Purchase some from the shop!
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Standings Tab -->
+            <div class="tab-pane fade" id="standings" role="tabpanel" aria-labelledby="standings-tab">
+                <h4>League Table</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>P</th>
+                                <th>W</th>
+                                <th>D</th>
+                                <th>L</th>
+                                <th>GF</th>
+                                <th>GA</th>
+                                <th>GD</th>
+                                <th>Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leagueTable">
+                            <!-- League table will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container"></div>
+    
+    <!-- Modal for Match Simulation -->
+    <div class="modal fade" id="matchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Match in Progress</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <div>
+                                <div id="homeTeamLogo" class="team-logo mx-auto">YT</div>
+                                <div id="homeTeamName">Your Team</div>
+                            </div>
+                            <div id="liveScore" class="match-score">0 - 0</div>
+                            <div>
+                                <div id="awayTeamLogo" class="team-logo mx-auto">OT</div>
+                                <div id="awayTeamName">Opponent Team</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress mb-3">
+                        <div id="matchProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    
+                    <div id="matchCommentary" class="bg-light p-3 rounded" style="height: 200px; overflow-y: auto;">
+                        <p>The match is about to begin...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Purchase Confirmation Modal -->
+    <div class="modal fade" id="purchaseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Purchase</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <h4 id="purchaseItemName">Item Name</h4>
+                        <div class="text-muted" id="purchaseItemDesc">Item description will appear here</div>
+                        <div class="mt-3">
+                            <span class="fs-4 fw-bold" id="purchaseItemPrice">0.1 TON</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        This will initiate a TON transaction. Please make sure your wallet is connected.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmPurchaseBtn">Confirm Purchase</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class TONFootballManager {
+            constructor() {
+                // Game state
+                this.gameState = {
+                    team: {
+                        name: "Your Team FC",
+                        rating: 75,
+                        funds: 1000,
+                        position: 10,
+                        matchesPlayed: 3,
+                        matchesWon: 1,
+                        matchesDrawn: 1,
+                        matchesLost: 1,
+                        goalsFor: 4,
+                        goalsAgainst: 5
+                    },
+                    season: {
+                        current: 3,
+                        total: 38
+                    },
+                    players: [],
+                    nextMatch: {
+                        opponent: "Opponent FC",
+                        opponentRating: 74,
+                        difficulty: "Medium"
+                    },
+                    matches: [],
+                    leagueTable: [],
+                    boosters: [],
+                    activeBoosters: []
+                };
+                
+                // TON Wallet Integration
+                this.tonConnectUI = null;
+                this.wallet = null;
+                this.isConnected = false;
+                
+                // Initialize the game
+                this.init();
+            }
+            
+            async init() {
+                // Initialize TON Connect UI
+                this.initTONWallet();
+                
+                // Generate initial game data
+                this.generatePlayers();
+                this.generateLeagueTable();
+                this.generateMatches();
+                this.generateShopItems();
+                
+                // Render the initial state
+                this.render();
+                
+                // Set up event listeners
+                this.setupEventListeners();
+            }
+            
+            initTONWallet() {
+                try {
+                    // Initialize TON Connect UI
+                    this.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                        manifestUrl: 'https://ton-connect.github.io/demo-dapp-with-wallet/tonconnect-manifest.json',
+                        buttonRootId: 'tonconnect-ui'
+                    });
+                    
+                    // Check if wallet is already connected
+                    this.tonConnectUI.onStatusChange(wallet => {
+                        if (wallet) {
+                            this.handleWalletConnected(wallet);
+                        } else {
+                            this.handleWalletDisconnected();
+                        }
+                    });
+                    
+                    this.showToast('Game initialized', 'info');
+                } catch (error) {
+                    this.showToast('Failed to initialize TON Connect: ' + error.message, 'danger');
+                }
+            }
+            
+            async handleWalletConnected(wallet) {
+                this.wallet = wallet;
+                this.isConnected = true;
+                
+                const address = wallet.account.address;
+                const friendlyAddress = this.formatAddress(address);
+                
+                // Update UI
+                document.getElementById('walletInfo').style.display = 'block';
+                document.getElementById('walletAddress').textContent = friendlyAddress;
+                
+                // Get balance
+                await this.updateBalance(address);
+                
+                this.showToast('Wallet connected successfully!', 'success');
+            }
+            
+            handleWalletDisconnected() {
+                this.wallet = null;
+                this.isConnected = false;
+                
+                // Update UI
+                document.getElementById('walletInfo').style.display = 'none';
+            }
+            
+            async updateBalance(address) {
+                try {
+                    // This is a mock function - in a real app, you would fetch from TON API
+                    // For demo purposes, we'll just set a random balance
+                    const balance = (Math.random() * 10).toFixed(2);
+                    document.getElementById('walletBalance').textContent = `${balance} TON`;
+                } catch (error) {
+                    console.error('Balance update error:', error);
+                    document.getElementById('walletBalance').textContent = 'Error loading balance';
+                }
+            }
+            
+            formatAddress(address) {
+                // Format the wallet address for display (first 6 and last 4 chars)
+                if (address && address.length > 10) {
+                    return address.substring(0, 6) + '...' + address.substring(address.length - 4);
+                }
+                return address;
+            }
+            
+            setupEventListeners() {
+                // Match simulation
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('play-match-btn')) {
+                        this.playMatch();
+                    } else if (e.target.classList.contains('buy-booster-btn')) {
+                        const boosterId = e.target.dataset.id;
+                        this.openPurchaseModal(boosterId);
+                    }
+                });
+                
+                // Purchase confirmation
+                document.getElementById('confirmPurchaseBtn').addEventListener('click', () => {
+                    const boosterId = document.getElementById('confirmPurchaseBtn').dataset.id;
+                    this.purchaseBooster(boosterId);
+                });
+            }
+            
+            generatePlayers() {
+                const positions = ['GK', 'DEF', 'MID', 'FWD'];
+                const firstNames = ['John', 'Alex', 'James', 'David', 'Carlos', 'Roberto', 'Michael', 'Kevin', 'Thomas', 'Paul'];
+                const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor'];
+                
+                // Generate 15 random players
+                for (let i = 0; i < 15; i++) {
+                    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+                    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+                    const position = positions[Math.floor(Math.random() * positions.length)];
+                    
+                    const player = {
+                        id: i + 1,
+                        name: `${firstName} ${lastName}`,
+                        position: position,
+                        age: 18 + Math.floor(Math.random() * 18), // 18-35
+                        rating: 65 + Math.floor(Math.random() * 25), // 65-89
+                        pace: 60 + Math.floor(Math.random() * 30),
+                        shooting: 60 + Math.floor(Math.random() * 30),
+                        passing: 60 + Math.floor(Math.random() * 30),
+                        form: ['Good', 'Average', 'Poor'][Math.floor(Math.random() * 3)]
+                    };
+                    
+                    this.gameState.players.push(player);
+                }
+            }
+            
+            generateLeagueTable() {
+                const teamNames = [
+                    "Arsenal FC", "Chelsea FC", "Liverpool FC", "Manchester City",
+                    "Manchester United", "Tottenham Hotspur", "Everton FC", "Leicester City",
+                    "Newcastle United", "West Ham United", "Aston Villa", "Your Team FC",
+                    "Brighton & Hove", "Crystal Palace", "Southampton FC", "Leeds United",
+                    "Burnley FC", "Watford FC", "Norwich City", "Wolverhampton"
+                ];
+                
+                for (let i = 0; i < teamNames.length; i++) {
+                    const played = Math.floor(Math.random() * 5);
+                    const won = Math.floor(Math.random() * (played + 1));
+                    const drawn = Math.floor(Math.random() * (played - won + 1));
+                    const lost = played - won - drawn;
+                    const goalsFor = won * 2 + drawn;
+                    const goalsAgainst = lost * 2 + drawn;
+                    
+                    const team = {
+                        position: i + 1,
+                        name: teamNames[i],
+                        played: played,
+                        won: won,
+                        drawn: drawn,
+                        lost: lost,
+                        goalsFor: goalsFor,
+                        goalsAgainst: goalsAgainst,
+                        goalDifference: goalsFor - goalsAgainst,
+                        points: won * 3 + drawn
+                    };
+                    
+                    this.gameState.leagueTable.push(team);
+                }
+                
+                // Sort by points
+                this.gameState.leagueTable.sort((a, b) => {
+                    if (a.points !== b.points) return b.points - a.points;
+                    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+                    return b.goalsFor - a.goalsFor;
+                });
+                
+                // Update positions
+                this.gameState.leagueTable.forEach((team, index) => {
+                    team.position = index + 1;
+                    if (team.name === "Your Team FC") {
+                        this.gameState.team.position = team.position;
+                    }
+                });
+            }
+            
+            generateMatches() {
+                // Generate some past match results
+                const opponents = this.gameState.leagueTable
+                    .filter(team => team.name !== "Your Team FC")
+                    .map(team => team.name);
+                
+                // Generate 3 past matches
+                for (let i = 0; i < 3; i++) {
+                    const opponent = opponents[Math.floor(Math.random() * opponents.length)];
+                    const homeGoals = Math.floor(Math.random() * 4);
+                    const awayGoals = Math.floor(Math.random() * 4);
+                    
+                    const match = {
+                        homeTeam: i % 2 === 0 ? "Your Team FC" : opponent,
+                        awayTeam: i % 2 === 0 ? opponent : "Your Team FC",
+                        homeGoals: homeGoals,
+                        awayGoals: awayGoals,
+                        played: true,
+                        commentary: []
+                    };
+                    
+                    this.gameState.matches.push(match);
+                }
+                
+                // Generate next match
+                const nextOpponent = opponents[Math.floor(Math.random() * opponents.length)];
+                this.gameState.nextMatch = {
+                    opponent: nextOpponent,
+                    opponentRating: 70 + Math.floor(Math.random() * 20),
+                    difficulty: ["Easy", "Medium", "Hard"][Math.floor(Math.random() * 3)],
+                    isHome: Math.random() > 0.5
+                };
+            }
+            
+            generateShopItems() {
+                this.gameState.boosters = [
+                    {
+                        id: 1,
+                        name: "Training Boost",
+                        description: "Improve your team's rating by +5 for the next 3 matches",
+                        price: 0.1,
+                        effect: {
+                            type: "rating",
+                            value: 5,
+                            duration: 3
+                        },
+                        image: "🏃‍♂️"
+                    },
+                    {
+                        id: 2,
+                        name: "Star Player",
+                        description: "Add a high-rated (90+) player to your team for 5 matches",
+                        price: 0.3,
+                        effect: {
+                            type: "player",
+                            value: 90,
+                            duration: 5
+                        },
+                        image: "⭐"
+                    },
+                    {
+                        id: 3,
+                        name: "Tactical Genius",
+                        description: "Doubles your chance of winning for the next match",
+                        price: 0.2,
+                        effect: {
+                            type: "tactics",
+                            value: 2,
+                            duration: 1
+                        },
+                        image: "🧠"
+                    },
+                    {
+                        id: 4,
+                        name: "Supporter Boost",
+                        description: "Home advantage +10% for the next 3 home matches",
+                        price: 0.15,
+                        effect: {
+                            type: "homeAdvantage",
+                            value: 10,
+                            duration: 3
+                        },
+                        image: "👥"
+                    },
+                    {
+                        id: 5,
+                        name: "Mental Coach",
+                        description: "Improves player form for 5 matches",
+                        price: 0.25,
+                        effect: {
+                            type: "form",
+                            value: "Good",
+                            duration: 5
+                        },
+                        image: "🧘‍♂️"
+                    },
+                    {
+                        id: 6,
+                        name: "Season Pass",
+                        description: "All boosters effect +20% for the rest of the season",
+                        price: 1.0,
+                        effect: {
+                            type: "all",
+                            value: 20,
+                            duration: -1 // entire season
+                        },
+                        image: "🏆"
+                    }
+                ];
+            }
+            
+            openPurchaseModal(boosterId) {
+                const booster = this.gameState.boosters.find(b => b.id == boosterId);
+                if (!booster) return;
+                
+                if (!this.isConnected) {
+                    this.showToast('Please connect your wallet first', 'warning');
+                    return;
+                }
+                
+                document.getElementById('purchaseItemName').textContent = booster.name;
+                document.getElementById('purchaseItemDesc').textContent = booster.description;
+                document.getElementById('purchaseItemPrice').textContent = `${booster.price} TON`;
+                document.getElementById('confirmPurchaseBtn').dataset.id = boosterId;
+                
+                const purchaseModal = new bootstrap.Modal(document.getElementById('purchaseModal'));
+                purchaseModal.show();
+            }
+            
+            async purchaseBooster(boosterId) {
+                const booster = this.gameState.boosters.find(b => b.id == boosterId);
+                if (!booster) return;
+                
+                try {
+                    if (!this.isConnected) {
+                        throw new Error('Wallet not connected');
+                    }
+                    
+                    this.showToast('Processing payment...', 'info');
+                    
+                    // Create transaction
+                    const transaction = {
+                        validUntil: Math.floor(Date.now() / 1000) + 300, // 5 minutes
+                        messages: [
+                            {
+                                // This would be your game's wallet address in a real implementation
+                                address: "EQD4FPq-PRDieyQKkizFTRtSDyucUIqrj0v_zXJmqaDp7EHL",
+                                amount: (booster.price * 1000000000).toString(), // Convert to nanotons
+                                payload: "Purchase: " + booster.name
+                            }
+                        ]
+                    };
+                    
+                    // In a real app, you would send this transaction
+                    // For this demo, we'll simulate a successful transaction
+                    
+                    // Simulate transaction time
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Add booster to active boosters
+                    const newBooster = {
+                        ...booster,
+                        purchasedAt: new Date(),
+                        remainingMatches: booster.effect.duration
+                    };
+                    
+                    this.gameState.activeBoosters.push(newBooster);
+                    
+                    // Apply booster effects
+                    this.applyBoosterEffects(newBooster);
+                    
+                    // Close modal and update UI
+                    const purchaseModal = bootstrap.Modal.getInstance(document.getElementById('purchaseModal'));
+                    purchaseModal.hide();
+                    
+                    this.render();
+                    this.showToast(`Successfully purchased ${booster.name}!`, 'success');
+                    
+                } catch (error) {
+                    this.showToast('Transaction failed: ' + error.message, 'danger');
+                }
+            }
+            
+            applyBoosterEffects(booster) {
+                switch (booster.effect.type) {
+                    case 'rating':
+                        this.gameState.team.rating += booster.effect.value;
+                        break;
+                    case 'player':
+                        // Add a star player
+                        const starPlayer = {
+                            id: 100 + this.gameState.players.length,
+                            name: "Star Player (Loan)",
+                            position: ["DEF", "MID", "FWD"][Math.floor(Math.random() * 3)],
+                            age: 25 + Math.floor(Math.random() * 5),
+                            rating: booster.effect.value,
+                            pace: 85 + Math.floor(Math.random() * 10),
+                            shooting: 85 + Math.floor(Math.random() * 10),
+                            passing: 85 + Math.floor(Math.random() * 10),
+                            form: "Good",
+                            isLoan: true
+                        };
+                        this.gameState.players.push(starPlayer);
+                        // Update team rating
+                        this.recalculateTeamRating();
+                        break;
+                    // Other effects would be applied when relevant
+                }
+            }
+            
+            recalculateTeamRating() {
+                // Calculate average of top 11 players
+                const topPlayers = [...this.gameState.players].sort((a, b) => b.rating - a.rating).slice(0, 11);
+                const totalRating = topPlayers.reduce((sum, player) => sum + player.rating, 0);
+                this.gameState.team.rating = Math.round(totalRating / 11);
+            }
+            
+            playMatch() {
+                // Create a new match
+                const isHome = this.gameState.nextMatch.isHome;
+                const homeTeam = isHome ? "Your Team FC" : this.gameState.nextMatch.opponent;
+                const awayTeam = isHome ? this.gameState.nextMatch.opponent : "Your Team FC";
+                
+                // Show match simulation modal
+                document.getElementById('homeTeamName').textContent = homeTeam;
+                document.getElementById('awayTeamName').textContent = awayTeam;
+                document.getElementById('homeTeamLogo').textContent = homeTeam.substring(0, 2);
+                document.getElementById('awayTeamLogo').textContent = awayTeam.substring(0, 2);
+                document.getElementById('liveScore').textContent = "0 - 0";
+                document.getElementById('matchCommentary').innerHTML = "<p>The match is about to begin...</p>";
+                document.getElementById('matchProgress').style.width = "0%";
+                
+                const matchModal = new bootstrap.Modal(document.getElementById('matchModal'));
+                matchModal.show();
+                
+                // Simulate match
+                this.simulateMatch(homeTeam, awayTeam, isHome);
+            }
+            
+            simulateMatch(homeTeam, awayTeam, isPlayerHome) {
+                let homeGoals = 0;
+                let awayGoals = 0;
+                let commentary = [];
+                let currentMinute = 0;
+                
+                // Calculate team strengths
+                const playerTeamRating = this.gameState.team.rating;
+                const opponentRating = this.gameState.nextMatch.opponentRating;
+                
+                // Apply boosters
+                let boosterModifier = 0;
+                this.gameState.activeBoosters.forEach(booster => {
+                    if (booster.effect.type === 'tactics' || 
+                        (booster.effect.type === 'homeAdvantage' && isPlayerHome)) {
+                        boosterModifier += booster.effect.value;
+                    }
+                });
+                
+                // Home advantage
+                const homeAdvantage = 5;
+                
+                // Final ratings with modifiers
+                const homeTeamRating = homeTeam === "Your Team FC" ? 
+                    playerTeamRating + homeAdvantage + boosterModifier : 
+                    opponentRating + homeAdvantage;
+                
+                const awayTeamRating = awayTeam === "Your Team FC" ? 
+                    playerTeamRating + boosterModifier : 
+                    opponentRating;
+                
+                // Add initial commentary
+                commentary.push(`The teams are on the field. ${homeTeam} (${homeTeamRating}) vs ${awayTeam} (${awayTeamRating}).`);
+                
+                // Initialize simulation variables
+                const matchEvents = [
+                    { minute: 1, text: "Kickoff! The match has begun." }
+                ];
+                
+                // Generate random events
+                const numEvents = 5 + Math.floor(Math.random() * 10); // 5-14 events
+                
+                for (let i = 0; i < numEvents; i++) {
+                    const eventMinute = 1 + Math.floor(Math.random() * 90);
+                    const isHomeEvent = Math.random() * (homeTeamRating + awayTeamRating) < homeTeamRating;
+                    const team = isHomeEvent ? homeTeam : awayTeam;
+                    
+                    // Different event types
+                    const eventType = Math.random();
+                    let eventText = "";
+                    
+                    if (eventType < 0.3) { // Goal!
+                        const scorer = team === "Your Team FC" ? 
+                            this.gameState.players[Math.floor(Math.random() * this.gameState.players.length)].name : 
+                            "Player"; // Generic for opponent
+                        
+                        eventText = `GOAL! ${scorer} scores for ${team}!`;
+                        
+                        if (isHomeEvent) {
+                            homeGoals++;
+                        } else {
+                            awayGoals++;
+                        }
+                    } else if (eventType < 0.6) { // Great chance
+                        const player = team === "Your Team FC" ? 
+                            this.gameState.players[Math.floor(Math.random() * this.gameState.players.length)].name : 
+                            "Player"; // Generic for opponent
+                        
+                        eventText = `${player} with a great chance for ${team}, but couldn't convert!`;
+                    } else if (eventType < 0.8) { // Yellow card
+                        const player = team === "Your Team FC" ? 
+                            this.gameState.players[Math.floor(Math.random() * this.gameState.players.length)].name : 
+                            "Player"; // Generic for opponent
+                        
+                        eventText = `Yellow card for ${player} (${team}).`;
+                    } else { // Corner kick
+                        eventText = `Corner kick for ${team}.`;
+                    }
+                    
+                    matchEvents.push({ minute: eventMinute, text: eventText });
+                }
+                
+                // Add halftime and fulltime events
+                matchEvents.push({ minute: 45, text: "Half-time! The players head to the dressing rooms." });
+                matchEvents.push({ minute: 90, text: "Full-time! The match has ended." });
+                
+                // Sort events by minute
+                matchEvents.sort((a, b) => a.minute - b.minute);
+                
+                // Run the simulation with a progress display
+                const commentaryElement = document.getElementById('matchCommentary');
+                const progressElement = document.getElementById('matchProgress');
+                const scoreElement = document.getElementById('liveScore');
+                
+                let eventIndex = 0;
+                const simulationInterval = setInterval(() => {
+                    currentMinute++;
+                    
+                    // Update progress bar
+                    progressElement.style.width = `${(currentMinute / 90) * 100}%`;
+                    
+                    // Check if there's an event for this minute
+                    while (eventIndex < matchEvents.length && matchEvents[eventIndex].minute <= currentMinute) {
+                        const event = matchEvents[eventIndex];
+                        
+                        // Add event to commentary
+                        commentaryElement.innerHTML += `<p><strong>${event.minute}'</strong> ${event.text}</p>`;
+                        
+                        // Scroll to bottom
+                        commentaryElement.scrollTop = commentaryElement.scrollHeight;
+                        
+                        // Update score if it was a goal event
+                        if (event.text.includes("GOAL!")) {
+                            scoreElement.textContent = `${homeGoals} - ${awayGoals}`;
+                        }
+                        
+                        eventIndex++;
+                    }
+                    
+                    // Check if simulation is complete
+                    if (currentMinute >= 90) {
+                        clearInterval(simulationInterval);
+                        this.finishMatch(homeTeam, awayTeam, homeGoals, awayGoals, matchEvents);
+                    }
+                }, 100); // Speed of simulation
+            }
+            
+            finishMatch(homeTeam, awayTeam, homeGoals, awayGoals, matchEvents) {
+                // Create match result
+                const match = {
+                    homeTeam: homeTeam,
+                    awayTeam: awayTeam,
+                    homeGoals: homeGoals,
+                    awayGoals: awayGoals,
+                    played: true,
+                    commentary: matchEvents.map(e => `${e.minute}': ${e.text}`)
+                };
+                
+                // Add to matches
+                this.gameState.matches.push(match);
+                
+                // Update team stats
+                this.gameState.season.current++;
+                this.gameState.team.matchesPlayed++;
+                
+                const isPlayerHome = homeTeam === "Your Team FC";
+                const playerGoals = isPlayerHome ? homeGoals : awayGoals;
+                const opponentGoals = isPlayerHome ? awayGoals : homeGoals;
+                
+                this.gameState.team.goalsFor += playerGoals;
+                this.gameState.team.goalsAgainst += opponentGoals;
+                
+                if (playerGoals > opponentGoals) {
+                    this.gameState.team.matchesWon++;
+                    this.gameState.team.funds += 300; // Win bonus
+                } else if (playerGoals === opponentGoals) {
+                    this.gameState.team.matchesDrawn++;
+                    this.gameState.team.funds += 100; // Draw bonus
+                } else {
+                    this.gameState.team.matchesLost++;
+                    this.gameState.team.funds += 50; // Participation bonus
+                }
+                
+                // Update league table
+                this.updateLeagueTable(homeTeam, awayTeam, homeGoals, awayGoals);
+                
+                // Generate next match
+                this.generateNextMatch();
+                
+                // Update booster durations
+                this.updateBoosters();
+                
+                // Re-render the game
+                this.render();
+                
+                // Show result toast
+                const result = playerGoals > opponentGoals ? "won" : (playerGoals === opponentGoals ? "drew" : "lost");
+                this.showToast(`Match complete! You ${result} ${playerGoals}-${opponentGoals}`, result === "won" ? "success" : (result === "drew" ? "warning" : "danger"));
+            }
+            
+            updateLeagueTable(homeTeam, awayTeam, homeGoals, awayGoals) {
+                // Update home team
+                const homeTeamIndex = this.gameState.leagueTable.findIndex(t => t.name === homeTeam);
+                if (homeTeamIndex >= 0) {
+                    const team = this.gameState.leagueTable[homeTeamIndex];
+                    team.played++;
+                    team.goalsFor += homeGoals;
+                    team.goalsAgainst += awayGoals;
+                    team.goalDifference = team.goalsFor - team.goalsAgainst;
+                    
+                    if (homeGoals > awayGoals) {
+                        team.won++;
+                        team.points += 3;
+                    } else if (homeGoals === awayGoals) {
+                        team.drawn++;
+                        team.points += 1;
+                    } else {
+                        team.lost++;
+                    }
+                }
+                
+                // Update away team
+                const awayTeamIndex = this.gameState.leagueTable.findIndex(t => t.name === awayTeam);
+                if (awayTeamIndex >= 0) {
+                    const team = this.gameState.leagueTable[awayTeamIndex];
+                    team.played++;
+                    team.goalsFor += awayGoals;
+                    team.goalsAgainst += homeGoals;
+                    team.goalDifference = team.goalsFor - team.goalsAgainst;
+                    
+                    if (awayGoals > homeGoals) {
+                        team.won++;
+                        team.points += 3;
+                    } else if (awayGoals === homeGoals) {
+                        team.drawn++;
+                        team.points += 1;
+                    } else {
+                        team.lost++;
+                    }
+                }
+                
+                // Sort table by points
+                this.gameState.leagueTable.sort((a, b) => {
+                    if (a.points !== b.points) return b.points - a.points;
+                    if (a.goalDifference !== b.goalDifference) return b.goalDifference - a.goalDifference;
+                    return b.goalsFor - a.goalsFor;
+                });
+                
+                // Update positions
+                this.gameState.leagueTable.forEach((team, index) => {
+                    team.position = index + 1;
+                    if (team.name === "Your Team FC") {
+                        this.gameState.team.position = team.position;
+                    }
+                });
+            }
+            
+            generateNextMatch() {
+                const opponents = this.gameState.leagueTable
+                    .filter(team => team.name !== "Your Team FC")
+                    .map(team => team.name);
+                
+                const nextOpponent = opponents[Math.floor(Math.random() * opponents.length)];
+                const opponentTeam = this.gameState.leagueTable.find(t => t.name === nextOpponent);
+                
+                this.gameState.nextMatch = {
+                    opponent: nextOpponent,
+                    opponentRating: 70 + Math.floor(Math.random() * 20),
+                    difficulty: opponentTeam.position < this.gameState.team.position ? "Hard" : 
+                                opponentTeam.position === this.gameState.team.position ? "Medium" : "Easy",
+                    isHome: Math.random() > 0.5
+                };
+            }
+            
+            updateBoosters() {
+                // Reduce remaining matches for each booster
+                this.gameState.activeBoosters.forEach(booster => {
+                    if (booster.remainingMatches > 0) {
+                        booster.remainingMatches--;
+                    }
+                });
+                
+                // Remove expired boosters and revert their effects
+                const expiredBoosters = this.gameState.activeBoosters.filter(b => b.remainingMatches === 0);
+                expiredBoosters.forEach(booster => {
+                    this.revertBoosterEffects(booster);
+                });
+                
+                // Keep only active boosters
+                this.gameState.activeBoosters = this.gameState.activeBoosters.filter(b => b.remainingMatches !== 0);
+            }
+            
+            revertBoosterEffects(booster) {
+                switch (booster.effect.type) {
+                    case 'rating':
+                        this.gameState.team.rating -= booster.effect.value;
+                        break;
+                    case 'player':
+                        // Remove loaned player
+                        this.gameState.players = this.gameState.players.filter(p => !p.isLoan);
+                        // Update team rating
+                        this.recalculateTeamRating();
+                        break;
+                    // Other effects reversion
+                }
+            }
+            
+            render() {
+                // Update status values
+                document.getElementById('teamRating').textContent = this.gameState.team.rating;
+                document.getElementById('teamFunds').textContent = this.gameState.team.funds;
+                document.getElementById('leaguePosition').textContent = `${this.gameState.team.position}${this.getOrdinalSuffix(this.gameState.team.position)}`;
+                document.getElementById('seasonProgress').textContent = `${this.gameState.season.current}/${this.gameState.season.total}`;
+                
+                document.getElementById('matchesPlayed').textContent = this.gameState.team.matchesPlayed;
+                document.getElementById('matchesWon').textContent = this.gameState.team.matchesWon;
+                document.getElementById('matchesDrawn').textContent = this.gameState.team.matchesDrawn;
+                document.getElementById('matchesLost').textContent = this.gameState.team.matchesLost;
+                
+                // Render players
+                this.renderPlayers();
+                
+                // Render next match
+                this.renderNextMatch();
+                
+                // Render match results
+                this.renderMatchResults();
+                
+                // Render league table
+                this.renderLeagueTable();
+                
+                // Render shop items
+                this.renderShopItems();
+                
+                // Render active boosters
+                this.renderActiveBoosters();
+            }
+            
+            renderPlayers() {
+                const playersContainer = document.getElementById('playersList');
+                playersContainer.innerHTML = '';
+                
+                // Sort players by rating
+                const sortedPlayers = [...this.gameState.players].sort((a, b) => b.rating - a.rating);
+                
+                sortedPlayers.forEach(player => {
+                    const playerCol = document.createElement('div');
+                    playerCol.className = 'col-md-6 col-lg-4';
+                    
+                    // Boosted badge for loaned players
+                    const boostBadge = player.isLoan ? 
+                        `<span class="badge bg-success">Loaned Star</span>` : '';
+                    
+                    playerCol.innerHTML = `
+                        <div class="player-card">
+                            ${boostBadge}
+                            <div class="player-details">
+                                <div class="player-avatar">${player.position}</div>
+                                <div class="player-info">
+                                    <h5>${player.name}</h5>
+                                    <div>Age: ${player.age} • Form: ${player.form}</div>
+                                </div>
+                            </div>
+                            <div class="player-stats">
+                                <div class="stat">
+                                    <div class="stat-value">${player.rating}</div>
+                                    <div class="stat-label">Rating</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${player.pace}</div>
+                                    <div class="stat-label">Pace</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${player.shooting}</div>
+                                    <div class="stat-label">Shooting</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${player.passing}</div>
+                                    <div class="stat-label">Passing</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    playersContainer.appendChild(playerCol);
+                });
+            }
+            
+            renderNextMatch() {
+                const nextMatchContainer = document.getElementById('nextMatch');
+                const difficultyClass = 
+                    this.gameState.nextMatch.difficulty === "Easy" ? "text-success" :
+                    this.gameState.nextMatch.difficulty === "Medium" ? "text-warning" : "text-danger";
+                
+                nextMatchContainer.innerHTML = `
+                    <div class="match-header">
+                        <div>
+                            <span class="badge bg-primary">${this.gameState.nextMatch.isHome ? 'Home' : 'Away'}</span>
+                            <span class="badge ${difficultyClass}">${this.gameState.nextMatch.difficulty}</span>
+                        </div>
+                        <div>Opponent Rating: ${this.gameState.nextMatch.opponentRating}</div>
+                    </div>
+                    <div class="match-teams">
+                        <span>${this.gameState.nextMatch.isHome ? 'Your Team FC' : this.gameState.nextMatch.opponent}</span>
+                        <span class="vs">vs</span>
+                        <span>${this.gameState.nextMatch.isHome ? this.gameState.nextMatch.opponent : 'Your Team FC'}</span>
+                    </div>
+                    <div class="match-actions">
+                        <button class="btn btn-primary play-match-btn">Play Match</button>
+                    </div>
+                `;
+            }
+            
+            renderMatchResults() {
+                const resultsContainer = document.getElementById('matchResults');
+                
+                if (this.gameState.matches.length === 0) {
+                    resultsContainer.innerHTML = '<div class="result-item">No matches played yet</div>';
+                    return;
+                }
+                
+                // Sort matches by newest first (assuming newest matches are at the end of the array)
+                const recentMatches = [...this.gameState.matches].reverse().slice(0, 5);
+                
+                resultsContainer.innerHTML = recentMatches.map(match => {
+                    const isPlayerHome = match.homeTeam === "Your Team FC";
+                    const isPlayerAway = match.awayTeam === "Your Team FC";
+                    const playerTeam = isPlayerHome ? match.homeTeam : match.awayTeam;
+                    const opponentTeam = isPlayerHome ? match.awayTeam : match.homeTeam;
+                    const playerGoals = isPlayerHome ? match.homeGoals : match.awayGoals;
+                    const opponentGoals = isPlayerHome ? match.awayGoals : match.homeGoals;
+                    const result = playerGoals > opponentGoals ? "Win" : (playerGoals === opponentGoals ? "Draw" : "Loss");
+                    const resultClass = result === "Win" ? "text-success" : (result === "Draw" ? "text-warning" : "text-danger");
+                    
+                    return `
+                        <div class="result-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="result-teams">
+                                    ${match.homeTeam} 
+                                    <span class="result-score">${match.homeGoals} - ${match.awayGoals}</span> 
+                                    ${match.awayTeam}
+                                </div>
+                                <span class="badge ${resultClass}">${result}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            renderLeagueTable() {
+                const tableContainer = document.getElementById('leagueTable');
+                tableContainer.innerHTML = '';
+                
+                this.gameState.leagueTable.forEach(team => {
+                    const row = document.createElement('tr');
+                    
+                    // Highlight user's team
+                    if (team.name === "Your Team FC") {
+                        row.className = 'table-primary';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${team.position}</td>
+                        <td>${team.name}</td>
+                        <td>${team.played}</td>
+                        <td>${team.won}</td>
+                        <td>${team.drawn}</td>
+                        <td>${team.lost}</td>
+                        <td>${team.goalsFor}</td>
+                        <td>${team.goalsAgainst}</td>
+                        <td>${team.goalDifference}</td>
+                        <td><strong>${team.points}</strong></td>
+                    `;
+                    
+                    tableContainer.appendChild(row);
+                });
+            }
+            
+            renderShopItems() {
+                const shopContainer = document.getElementById('shopItems');
+                shopContainer.innerHTML = '';
+                
+                this.gameState.boosters.forEach(item => {
+                    const itemCol = document.createElement('div');
+                    itemCol.className = 'col-md-6 col-lg-4';
+                    
+                    itemCol.innerHTML = `
+                        <div class="shop-item">
+                            <div class="shop-item-header">
+                                <div class="shop-item-title">${item.image} ${item.name}</div>
+                                <div class="shop-item-price">${item.price} TON</div>
+                            </div>
+                            <p class="shop-item-desc">${item.description}</p>
+                            <button class="btn btn-primary btn-sm buy-booster-btn" data-id="${item.id}">Purchase</button>
+                        </div>
+                    `;
+                    
+                    shopContainer.appendChild(itemCol);
+                });
+            }
+            
+            renderActiveBoosters() {
+                const boostersContainer = document.getElementById('activeBoosters');
+                
+                if (this.gameState.activeBoosters.length === 0) {
+                    boostersContainer.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-light">
+                                No active boosters. Purchase some from the shop!
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                boostersContainer.innerHTML = '';
+                
+                this.gameState.activeBoosters.forEach(booster => {
+                    const boosterCol = document.createElement('div');
+                    boosterCol.className = 'col-md-6 col-lg-4';
+                    
+                    const duration = booster.effect.duration === -1 ? 
+                        "Season-long" : `${booster.remainingMatches} match${booster.remainingMatches !== 1 ? 'es' : ''}`;
+                    
+                    boosterCol.innerHTML = `
+                        <div class="shop-item booster-active">
+                            <div class="shop-item-header">
+                                <div class="shop-item-title">${booster.image} ${booster.name}</div>
+                                <div><span class="badge bg-info">${duration}</span></div>
+                            </div>
+                            <p class="shop-item-desc">${booster.description}</p>
+                        </div>
+                    `;
+                    
+                    boostersContainer.appendChild(boosterCol);
+                });
+            }
+            
+            showToast(message, type = 'info') {
+                const toastContainer = document.querySelector('.toast-container');
+                const toast = document.createElement('div');
+                
+                toast.className = `toast show bg-${type} text-white`;
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+                
+                toast.innerHTML = `
+                    <div class="toast-header bg-${type} text-white">
+                        <strong class="me-auto">TON Football Manager</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
+            }
+            
+            getOrdinalSuffix(num) {
+                const j = num % 10;
+                const k = num % 100;
+                if (j === 1 && k !== 11) {
+                    return "st";
+                }
+                if (j === 2 && k !== 12) {
+                    return "nd";
+                }
+                if (j === 3 && k !== 13) {
+                    return "rd";
+                }
+                return "th";
+            }
+        }
+        
+        // Initialize the game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new TONFootballManager();
+        });
+    </script>
+</body>
+</html>
